@@ -1,62 +1,107 @@
-<!-- Description -->
+# HelloID-Conn-SA-Full-Exchange-On-Premises-Mailcontact-Update
+
+| :information_source: Information                                                                                                                                                                                                                                                                                                                                                          |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| This repository contains the connector and configuration code only. The implementer is responsible for acquiring the connection details such as username, password, certificate, etc. You might even need to sign a contract or agreement with the supplier before implementing this connector. Please contact the client's application manager to coordinate the connector requirements. |
+
 ## Description
-This HelloID Service Automation Delegated Form provides the functionality to update an existing mail contact.
 
- 1. Enter a name to lookup the user account for whom you want to manage devices.
- 2. The result will show you a list of matching users. You will need select to correct one
- 3. From the available disabled and active sync devices, you can manage the availabilty
+_HelloID-Conn-SA-Full-Exchange-On-Premises-Mailcontact-Update_ is a template designed for use with HelloID Service Automation (SA) Delegated Forms. It can be imported into HelloID and customized according to your requirements.
 
-## Versioning
-| Version | Description | Date |
-| - | - | - |
-| 1.0.0   | Initial release | 2023/08/18  |
+By using this delegated form, you can update an existing Exchange On-Premises mail contact with new attribute values. The following workflow is available:
 
-<!-- TABLE OF CONTENTS -->
-## Table of Contents
-* [Description](#description)
-* [All-in-one PowerShell setup script](#all-in-one-powershell-setup-script)
-  * [Getting started](#getting-started)
-* [Post-setup configuration](#post-setup-configuration)
-* [Manual resources](#manual-resources)
+1. Search for an existing mail contact by entering a name, alias, or email address
+2. Select the mail contact you want to update from the search results
+3. Modify the mail contact attributes (display name, first name, last name, initials, alias, external email address)
+4. The form validates that the new display name, alias, and email address are unique (or already belong to the selected mail contact)
+5. Optionally configure the mail contact visibility in the address list
+6. The mail contact is updated with the new values in Exchange On-Premises
+7. Comprehensive audit logs are generated for all operations
 
+## Getting started
 
-## All-in-one PowerShell setup script
-The PowerShell script "createform.ps1" contains a complete PowerShell script using the HelloID API to create the complete Form including user defined variables, tasks and data sources.
+### Requirements
 
- _Please note that this script asumes none of the required resources do exists within HelloID. The script does not contain versioning or source control_
+- **Exchange On-Premises Environment**:<br>
+  An on-premises Exchange Server environment (2013, 2016, 2019, or newer) with PowerShell remote management enabled.
 
+- **Exchange Administrative Credentials**:<br>
+  An Exchange administrator account with sufficient permissions to manage mail contacts. The account must have permissions to run `Get-Recipient`, `Get-MailContact`, `Set-Contact`, and `Set-MailContact` cmdlets.
 
-### Getting started
-Please follow the documentation steps on [HelloID Docs](https://docs.helloid.com/hc/en-us/articles/360017556559-Service-automation-GitHub-resources) in order to setup and run the All-in one Powershell Script in your own environment.
+- **PowerShell Remoting**:<br>
+  PowerShell remoting must be enabled on the Exchange server. The HelloID agent must be able to establish remote PowerShell sessions to the Exchange server using the configured connection URI.
 
+- **Network Connectivity**:<br>
+  The HelloID agent server must have network access to the Exchange PowerShell endpoint (typically `https://exchangeserver/powershell` or `http://exchangeserver/powershell`).
 
-## Post-setup configuration
-After the all-in-one PowerShell script has run and created all the required resources. The following items need to be configured according to your own environment
- 1. Update the following [user defined variables](https://docs.helloid.com/hc/en-us/articles/360014169933-How-to-Create-and-Manage-User-Defined-Variables)
-<table>
-  <tr><td><strong>Variable name</strong></td><td><strong>Example value</strong></td><td><strong>Description</strong></td></tr>
-  <tr><td>ExchangeConnectionUri</td><td>https://exchangeserver/powershell</td><td>Exchange server URI</td></tr>
-  <tr><td>ExchangeAdminUsername</td><td>username@domain.com</td><td>Exchange server admin account</td></tr>
-  <tr><td>ExchangeAdminPassword</td><td>********</td><td>Exchange server admin password</td></tr>
-</table>
+### Connection settings
 
-## Manual resources
-This Delegated Form uses the following resources in order to run
+The following user-defined variables are used by the connector.
 
-### Powershell data source '[powershell-datasource]_Exchange-mailcontact-update-generate-table-wildcard'
-This Powershell data source runs a query to search for the mail contact.
+| Setting               | Description                                    | Mandatory |
+| --------------------- | ---------------------------------------------- | --------- |
+| ExchangeConnectionUri | The PowerShell endpoint URI of Exchange server | Yes       |
+| ExchangeAdminUsername | The username of Exchange administrator account | Yes       |
+| ExchangeAdminPassword | The password of Exchange administrator account | Yes       |
 
-### Powershell data source '[powershell-datasource]_Exchange-mailcontact-update-check-names'
-This Powershell data source runs a query to search for availability of the contact's given external mailaddress.
+## Remarks
 
-### Powershell data source '[powershell-datasource]_Exchange-mailcontact-update-hidefromaddresslist'
-This Powershell data source runs a query to return the visibility of the mail contact in the addresslist.
+### Authentication Method
 
-### Delegated form task '[task]_Exchange on-premise - Update Mailcontact'
-This delegated form task performs the update on the mail contact.
+The connector uses 'Default' authentication for establishing the Exchange PowerShell session. This authentication method supports various authentication mechanisms including Basic, Kerberos, and NTLM, depending on your Exchange server configuration.
+
+### Session Security Options
+
+The connector sets all security check parameters (`SkipCACheck`, `SkipCNCheck`, `SkipRevocationCheck`) to `$false` to ensure secure connections. If your environment uses self-signed certificates or has specific certificate requirements, you may need to adjust these settings in the datasource and task scripts.
+
+### GUID-Based Identity Resolution
+
+The connector uses the mailcontact GUID property for all update operations. This ensures accurate identification of the mail contact even if display names or email addresses change during the update process.
+
+### Split Validation Datasources
+
+Validation is performed by three separate datasources that check uniqueness for display name, alias, and email address independently. Each validation datasource verifies whether the value is:
+
+- Unique and free to use
+- Already in use by the selected mailcontact (which is acceptable for updates)
+- In use by a different object (which blocks the update)
+
+### Update Operations
+
+The task performs mail contact updates in two distinct operations:
+
+1. **Name attributes** are updated using `Set-Contact` (DisplayName, FirstName, LastName, Initials)
+2. **Mail-specific attributes** are updated using `Set-MailContact` (Alias, ExternalEmailAddress, HiddenFromAddressListsEnabled)
+
+This separation ensures that Active Directory attributes and Exchange mail attributes are properly synchronized.
+
+### Command Import Optimization
+
+The connector explicitly specifies which Exchange cmdlets to import during session creation. This reduces memory usage and improves performance by avoiding the import of unnecessary Exchange cmdlets. Only the required commands (`Get-Recipient`, `Get-MailContact`, `Set-Contact`, `Set-MailContact`) are imported.
+
+## Development resources
+
+### PowerShell Cmdlets
+
+The following Exchange PowerShell cmdlets are used:
+
+| Cmdlet          | Description                                    | Documentation                                                                                  |
+| --------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Get-Recipient   | Retrieves recipients for validation and search | [Microsoft Docs](https://learn.microsoft.com/en-us/powershell/module/exchange/get-recipient)   |
+| Get-MailContact | Retrieves mail contact details                 | [Microsoft Docs](https://learn.microsoft.com/en-us/powershell/module/exchange/get-mailcontact) |
+| Set-Contact     | Updates Active Directory contact attributes    | [Microsoft Docs](https://learn.microsoft.com/en-us/powershell/module/exchange/set-contact)     |
+| Set-MailContact | Updates Exchange mail contact attributes       | [Microsoft Docs](https://learn.microsoft.com/en-us/powershell/module/exchange/set-mailcontact) |
+
+### API documentation
+
+- [Connect to Exchange servers using remote PowerShell](https://learn.microsoft.com/en-us/powershell/exchange/connect-to-exchange-servers-using-remote-powershell)
+- [Exchange PowerShell Module](https://learn.microsoft.com/en-us/powershell/exchange/exchange-management-shell)
 
 ## Getting help
-_If you need help, feel free to ask questions on our [forum](https://forum.helloid.com/forum/helloid-connectors/service-automation/4802-helloid-sa-exchange-on-premises-manage-activesyncdevices)_
 
-## HelloID Docs
+> :bulb: **Tip:**  
+> _For more information on Delegated Forms, please refer to our [documentation](https://docs.helloid.com/en/service-automation/delegated-forms.html) pages_.
+
+## HelloID docs
+
 The official HelloID documentation can be found at: https://docs.helloid.com/

@@ -1,0 +1,26 @@
+[
+    {
+        "description":  null,
+        "translateDescription":  false,
+        "inputFieldType":  1,
+        "key":  "alias",
+        "type":  0,
+        "options":  1
+    },
+    {
+        "description":  null,
+        "translateDescription":  false,
+        "inputFieldType":  1,
+        "key":  "externalEmailAddress",
+        "type":  0,
+        "options":  1
+    },
+    {
+        "description":  null,
+        "translateDescription":  false,
+        "inputFieldType":  1,
+        "key":  "selectedmailcontact",
+        "type":  0,
+        "options":  1
+    }
+]
