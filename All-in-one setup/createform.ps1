@@ -823,7 +823,7 @@ exchange-on-premises-mailcontact-update| Exchange-On-Premises-Check-EmailAddress
 Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_2_Name -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -DataSourceRunInCloud "False" -returnObject ([Ref]$dataSourceGuid_2) 
 <# End: DataSource "exchange-on-premises-mailcontact-update| Exchange-On-Premises-Check-EmailAddress-Unique" #>
 
-<# Begin: DataSource "Exchange-mailcontact-update-hidefromaddresslist" #>
+<# Begin: DataSource "exchange-on-premises-mailcontact-update | Exchange-On-Premises-Update-Visibility" #>
 $tmpPsScript = @'
 $status = $datasource.hidefromaddresslist.HiddenFromAddressListsEnabled
 $result = $false
@@ -841,10 +841,10 @@ $tmpInput = @'
 '@ 
 $dataSourceGuid_4 = [PSCustomObject]@{} 
 $dataSourceGuid_4_Name = @'
-Exchange-mailcontact-update-hidefromaddresslist
+exchange-on-premises-mailcontact-update | Exchange-On-Premises-Update-Visibility
 '@ 
 Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_4_Name -DatasourceType "4" -DatasourceInput $tmpInput -DatasourcePsScript $tmpPsScript -DatasourceModel $tmpModel -DataSourceRunInCloud "False" -returnObject ([Ref]$dataSourceGuid_4) 
-<# End: DataSource "Exchange-mailcontact-update-hidefromaddresslist" #>
+<# End: DataSource "exchange-on-premises-mailcontact-update | Exchange-On-Premises-Update-Visibility" #>
 
 <# Begin: DataSource "exchange-on-premises-mailcontact-update | Exchange-On-Premises-Get-Mailcontact-Wildcard-Name-Alias-EmailAddress" #>
 $tmpPsScript = @'
